@@ -148,3 +148,7 @@ vite.config.ts.timestamp-*
 # Turbo Repo
 .turbo
 dist/
+
+# Build del frontend servido por Express.
+public/*
+!public/.gitkeep

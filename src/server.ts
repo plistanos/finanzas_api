@@ -1,7 +1,6 @@
 import { MongoClient } from 'mongodb';
-import MongoStore from 'connect-mongo';
+import { bootstrapAccounts } from './accounts.js';
 import { loadConfig } from './config.js';
-import { MongoFinanceStore } from './store.js';
 import { createApp } from './app.js';
 
 async function start() {
@@ -11,13 +10,11 @@ async function start() {
     await client.connect();
     const db = client.db();
     await db.command({ ping: 1 });
-    const store = new MongoFinanceStore(db);
-    await store.initialize();
-    const sessionStore = config.APP_PASSWORD ? MongoStore.create({ client, dbName: db.databaseName, collectionName: 'sessions', ttl: 8 * 60 * 60 }) : undefined;
-    const app = createApp({ config, store, sessionStore, ping: async () => { await db.command({ ping: 1 }); } });
+    const { auth, storesForUser } = await bootstrapAccounts(db, config);
+    const app = createApp({ config, auth, storesForUser, ping: async () => { await db.command({ ping: 1 }); } });
     const server = app.listen(config.PORT, config.HOST, () => {
       console.info(`Finanzas API: http://${config.HOST}:${config.PORT}/api (${config.NODE_ENV})`);
-      console.info(`MongoDB conectado. Acceso ${config.APP_PASSWORD ? 'con contraseña' : 'local sin contraseña'}.`);
+      console.info('MongoDB conectado. Acceso con cuentas y JWT.');
     });
     server.on('error', async () => { console.error('No se pudo abrir el puerto de la API. Revisa HOST y PORT.'); await client.close(); process.exitCode = 1; });
     const shutdown = () => {
@@ -33,4 +30,4 @@ async function start() {
     process.exitCode = 1;
   }
 }
-start().catch(() => { console.error('Configuración inválida. Revisa NODE_ENV, MONGODB_URI, PORT, HOST, FRONTEND_URL y los requisitos de APP_PASSWORD y SESSION_SECRET del README.'); process.exitCode = 1; });
+start().catch(() => { console.error('Configuración inválida. Revisa NODE_ENV, MONGODB_URI, PORT, HOST, FRONTEND_URL y los requisitos de JWT_SECRET y las credenciales iniciales del README.'); process.exitCode = 1; });
