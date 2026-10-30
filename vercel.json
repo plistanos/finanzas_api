@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "index.js": {
+      "includeFiles": "{dist/**,node_modules/helmet/**}"
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!api(?:/|$)|assets(?:/|$))[^.]*)",

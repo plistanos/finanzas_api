@@ -141,7 +141,7 @@ Abre `http://127.0.0.1:3001/` en desarrollo local. En producción abre tu domini
 
 ## Vercel
 
-La entrada `index.ts` exporta la aplicación Express y reutiliza su conexión a MongoDB entre solicitudes de cada instancia. `src/server.ts` sigue siendo la entrada para desarrollo local y `npm start`. `npm run build` comprueba ambas entradas. Node.js queda fijado en `22.x`.
+La entrada `index.js` carga `dist/runtime.js` después de compilar y exporta la aplicación Express y reutiliza su conexión a MongoDB entre solicitudes de cada instancia. `src/server.ts` sigue siendo la entrada para desarrollo local y `npm start`. `npm run build` genera el JavaScript de la API en `dist/`. La entrada del despliegue usa esos archivos compilados, sin depender de resolución de TypeScript en ejecución. Node.js queda fijado en `22.x`.
 
 En Vercel selecciona el framework Express, usa la raíz del repositorio `finanzas_api`, el comando de build `npm run build` y deja el directorio de salida sin sobrescribir. No uses `dist` como directorio de sitio estático: contiene la API compilada.
 
@@ -156,3 +156,5 @@ Configura en las variables de entorno de Vercel:
 Antes de subir los cambios, copia el build del frontend a `public/` e incluye esos archivos en el commit. Vercel los sirve mediante su CDN, y `vercel.json` dirige las rutas de la página a `index.html` sin reescribir `/api` ni los assets. El archivo local `.env` no se sube a Git; las variables deben configurarse en Vercel.
 
 Referencia: [Express en Vercel](https://vercel.com/docs/frameworks/backend/express).
+
+Si Vercel muestra `Cannot find module helmet`, comprueba que el despliegue incluya la importación estática de Helmet y la configuración `functions.index.js.includeFiles` de `vercel.json`. Los logs de arranque `API_STARTUP_FAILED` indican el tipo de error, código y nombres de variables inválidas, sin imprimir sus valores.
