@@ -43,7 +43,9 @@ test('configuración exige un secreto JWT persistente y admite producción', () 
   assert.equal(config.NODE_ENV, 'development');
   assert.equal(config.MONGODB_URI, 'mongodb://localhost:27017/finanzas');
   assert.throws(() => parseConfig({ NODE_ENV: 'test', JWT_SECRET: secret }));
-  assert.equal(parseConfig({ NODE_ENV: 'production', JWT_SECRET: secret }).NODE_ENV, 'production');
+  assert.throws(() => parseConfig({ NODE_ENV: 'production', JWT_SECRET: secret }));
+  assert.throws(() => parseConfig({ VERCEL: '1', JWT_SECRET: secret }));
+  assert.equal(parseConfig({ NODE_ENV: 'production', JWT_SECRET: secret, MONGODB_URI: 'mongodb+srv://example.mongodb.net/finanzas' }).NODE_ENV, 'production');
 });
 
 test('CRUD persiste movimientos y actualiza la revisión', async () => {

@@ -15,7 +15,8 @@ const environmentSchema = z.object({
 
 export type Config = z.infer<typeof environmentSchema>;
 export const parseConfig = (env: Record<string, string | undefined>): Config => {
-  let uri = env.MONGODB_URI;
+  // En un despliegue nunca recurrir silenciosamente a MongoDB local.
+  let uri = env.MONGODB_URI?.trim() ?? (env.NODE_ENV === 'production' || env.VERCEL === '1' ? '' : undefined);
   if (uri?.includes('<db_username>') || uri?.includes('<db_password>')) {
     if (!env.USER_MONGO || !env.PASSWORD_MONGO) {
       throw new Error('Configura USER_MONGO y PASSWORD_MONGO para completar MONGODB_URI.');
