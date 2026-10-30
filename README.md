@@ -4,7 +4,7 @@ API personal con Node.js, Express, TypeScript y MongoDB. Conexión por defecto: 
 
 ## Desarrollo local
 
-Requisitos: Node.js 20.19 o superior y MongoDB en ejecución.
+Requisitos: Node.js 22.x y MongoDB en ejecución.
 
 ```sh
 cd finanzas_api
@@ -137,4 +137,22 @@ npm run build
 npm start
 ```
 
-Abre `http://127.0.0.1:3001/` en desarrollo local. En producción abre tu dominio HTTPS. La página y la API comparten servidor, y el login admite este mismo origen además de `FRONTEND_URL` para desarrollo separado. Las rutas de la SPA devuelven `index.html`; las rutas `/api` siguen devolviendo JSON y mantienen la autenticación. Los archivos generados en `public/` se ignoran en Git.
+Abre `http://127.0.0.1:3001/` en desarrollo local. En producción abre tu dominio HTTPS. La página y la API comparten servidor, y el login admite este mismo origen además de `FRONTEND_URL` para desarrollo separado. Las rutas de la SPA devuelven `index.html`; las rutas `/api` siguen devolviendo JSON y mantienen la autenticación. Los archivos generados en `public/` se versionan para incluir el frontend en despliegues desde Git.
+
+## Vercel
+
+La entrada `index.ts` exporta la aplicación Express y reutiliza su conexión a MongoDB entre solicitudes de cada instancia. `src/server.ts` sigue siendo la entrada para desarrollo local y `npm start`. `npm run build` comprueba ambas entradas. Node.js queda fijado en `22.x`.
+
+En Vercel selecciona el framework Express, usa la raíz del repositorio `finanzas_api`, el comando de build `npm run build` y deja el directorio de salida sin sobrescribir. No uses `dist` como directorio de sitio estático: contiene la API compilada.
+
+Configura en las variables de entorno de Vercel:
+
+- `NODE_ENV=production`.
+- `MONGODB_URI`: la misma base Atlas que contiene la cuenta y los datos. Si la URI contiene placeholders, configura también `USER_MONGO` y `PASSWORD_MONGO`.
+- `JWT_SECRET`: el mismo secreto persistente del backend, de al menos 32 caracteres.
+- `FRONTEND_URL`: el origen HTTPS del sitio desplegado, sin rutas.
+- `INITIAL_USERNAME` y `INITIAL_PASSWORD` solo son necesarios para crear la primera cuenta en una base vacía. La cuenta existente no se reinicia.
+
+Antes de subir los cambios, copia el build del frontend a `public/` e incluye esos archivos en el commit. Vercel los sirve mediante su CDN, y `vercel.json` dirige las rutas de la página a `index.html` sin reescribir `/api` ni los assets. El archivo local `.env` no se sube a Git; las variables deben configurarse en Vercel.
+
+Referencia: [Express en Vercel](https://vercel.com/docs/frameworks/backend/express).

@@ -190,7 +190,7 @@ test('sirve public y rutas SPA; conserva JSON en API y rechaza assets inexistent
     await writeFile(join(folder, 'index.html'), '<!doctype html><html><body>Savia build</body></html>');
     await writeFile(join(folder, 'assets', 'app.js'), 'console.log("Savia");');
     const { app, client } = await setup(undefined, folder);
-    await request(app).get('/').expect(200).expect('Content-Type', /html/).expect(/Savia build/);
+    await request(app).get('/').expect(200).expect('Content-Type', /html/).expect('X-Content-Type-Options', 'nosniff').expect('Content-Security-Policy', /default-src 'self'/).expect(/Savia build/);
     await request(app).get('/categorias').set('Accept', 'text/html').expect(200).expect(/Savia build/);
     await request(app).get('/assets/app.js').expect(200).expect('Content-Type', /javascript/);
     await request(app).get('/assets/no-existe.js').set('Accept', 'text/html').expect(404);

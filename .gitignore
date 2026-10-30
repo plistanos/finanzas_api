@@ -149,6 +149,4 @@ vite.config.ts.timestamp-*
 .turbo
 dist/
 
-# Build del frontend servido por Express.
-public/*
-!public/.gitkeep
+# public/ se versiona para que el despliegue desde Git incluya el frontend.

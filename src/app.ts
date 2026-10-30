@@ -1,8 +1,9 @@
-import express, { type ErrorRequestHandler, type Request, type Response } from 'express';
+import express, { type ErrorRequestHandler, type Request, type Response, type RequestHandler } from 'express';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { extname, join } from 'node:path';
 import cors from 'cors';
-import helmet from 'helmet';
+import type { HelmetOptions } from 'helmet';
 import { rateLimit } from 'express-rate-limit';
 import { MongoNetworkError, MongoServerSelectionError } from 'mongodb';
 import { ZodError } from 'zod';
@@ -12,6 +13,10 @@ import { ApiError } from './errors.js';
 import { dataSchema, emptyData, transactionSchema, type FinanceState } from './schema.js';
 import type { FinanceStore } from './store.js';
 import { categorySchema, type CategoryStore } from './categories.js';
+
+// Helmet publica tipos CommonJS que Vercel interpreta como un namespace ESM.
+// Cargamos su export CommonJS explícitamente y mantenemos tipadas sus opciones.
+const helmet = createRequire(import.meta.url)('helmet') as (options?: Readonly<HelmetOptions>) => RequestHandler;
 
 type Stores = { store: FinanceStore; categoryStore: CategoryStore };
 type Options = { config: Config; auth: AuthService; storesForUser: (userId: string) => Promise<Stores>; ping: () => Promise<void>; publicDir?: string };
